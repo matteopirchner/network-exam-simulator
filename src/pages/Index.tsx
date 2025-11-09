@@ -89,7 +89,7 @@ const Index = () => {
   const progress = ((currentQuestion + 1) / randomizedQuestions.length) * 100;
 
   if (!started) {
-    return <WelcomeScreen onStart={handleStart} totalQuestions={questions.length} />;
+    return <WelcomeScreen onStart={handleStart} />;
   }
 
   if (showResults) {

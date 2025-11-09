@@ -4,10 +4,9 @@ import { CheckCircle2, Clock, FileText, Award } from "lucide-react";
 
 interface WelcomeScreenProps {
   onStart: () => void;
-  totalQuestions: number;
 }
 
-export const WelcomeScreen = ({ onStart, totalQuestions }: WelcomeScreenProps) => {
+export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full">
@@ -26,7 +25,7 @@ export const WelcomeScreen = ({ onStart, totalQuestions }: WelcomeScreenProps) =
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-muted rounded-lg p-4 text-center">
               <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
-              <div className="text-2xl font-bold">{totalQuestions}</div>
+              <div className="text-2xl font-bold">100-120</div>
               <div className="text-sm text-muted-foreground">Questions</div>
             </div>
             <div className="bg-muted rounded-lg p-4 text-center">
