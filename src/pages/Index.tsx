@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { questions } from "@/data/questions";
 import { QuestionCard } from "@/components/QuestionCard";
 import { ResultsScreen } from "@/components/ResultsScreen";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
+import { Timer } from "@/components/Timer";
+import { toast } from "sonner";
 
 export interface Answer {
   questionId: number;
@@ -13,16 +14,35 @@ export interface Answer {
   isCorrect: boolean;
 }
 
+// Shuffle array using Fisher-Yates algorithm
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const Index = () => {
   const [started, setStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  
+  // Randomize questions only once when exam starts
+  const randomizedQuestions = useMemo(() => shuffleArray(questions), [started]);
 
   const handleStart = () => {
     setStarted(true);
+    toast.success("Exam started! You have 120 minutes to complete.");
   };
+
+  const handleTimeUp = useCallback(() => {
+    toast.error("Time's up! Your exam has been submitted.");
+    setShowResults(true);
+  }, []);
 
   const handleAnswerSelect = (answerIndex: number) => {
     setSelectedAnswer(answerIndex);
@@ -31,7 +51,7 @@ const Index = () => {
   const handleNext = () => {
     if (selectedAnswer === null) return;
 
-    const question = questions[currentQuestion];
+    const question = randomizedQuestions[currentQuestion];
     const isCorrect = selectedAnswer === question.correctAnswer;
 
     const newAnswer: Answer = {
@@ -43,7 +63,7 @@ const Index = () => {
     const updatedAnswers = [...answers, newAnswer];
     setAnswers(updatedAnswers);
 
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < randomizedQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedAnswer(null);
     } else {
@@ -59,17 +79,17 @@ const Index = () => {
     setSelectedAnswer(null);
   };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const progress = ((currentQuestion + 1) / randomizedQuestions.length) * 100;
 
   if (!started) {
-    return <WelcomeScreen onStart={handleStart} />;
+    return <WelcomeScreen onStart={handleStart} totalQuestions={questions.length} />;
   }
 
   if (showResults) {
     return (
       <ResultsScreen
         answers={answers}
-        questions={questions}
+        questions={randomizedQuestions}
         onRestart={handleRestart}
       />
     );
@@ -78,20 +98,24 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Timer initialMinutes={120} onTimeUp={handleTimeUp} />
+        </div>
+
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-foreground">
-              CCNA 200-301 Prüfungssimulator
+              CCNA 200-301 Exam Simulator
             </h1>
             <div className="text-sm text-muted-foreground">
-              Frage {currentQuestion + 1} von {questions.length}
+              Question {currentQuestion + 1} of {randomizedQuestions.length}
             </div>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
 
         <QuestionCard
-          question={questions[currentQuestion]}
+          question={randomizedQuestions[currentQuestion]}
           selectedAnswer={selectedAnswer}
           onAnswerSelect={handleAnswerSelect}
         />
@@ -102,14 +126,14 @@ const Index = () => {
             onClick={handleRestart}
             className="w-32"
           >
-            Abbrechen
+            Cancel
           </Button>
           <Button
             onClick={handleNext}
             disabled={selectedAnswer === null}
             className="w-32"
           >
-            {currentQuestion === questions.length - 1 ? "Beenden" : "Weiter"}
+            {currentQuestion === randomizedQuestions.length - 1 ? "Submit" : "Next"}
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, TrendingUp, Award } from "lucide-react";
+import { CheckCircle2, XCircle, TrendingUp, Award, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import type { Answer } from "@/pages/Index";
 import type { Question } from "@/data/questions";
@@ -19,20 +19,26 @@ export const ResultsScreen = ({
   onRestart,
 }: ResultsScreenProps) => {
   const correctCount = answers.filter((a) => a.isCorrect).length;
-  const percentage = Math.round((correctCount / questions.length) * 100);
+  const totalAnswered = answers.length;
+  const totalQuestions = questions.length;
+  const percentage = Math.round((correctCount / totalQuestions) * 100);
   const passed = percentage >= 70;
 
+  // Calculate category statistics
   const categoryStats = questions.reduce((acc, question) => {
     const answer = answers.find((a) => a.questionId === question.id);
     if (!acc[question.category]) {
-      acc[question.category] = { correct: 0, total: 0 };
+      acc[question.category] = { correct: 0, total: 0, answered: 0 };
     }
     acc[question.category].total++;
-    if (answer?.isCorrect) {
-      acc[question.category].correct++;
+    if (answer) {
+      acc[question.category].answered++;
+      if (answer.isCorrect) {
+        acc[question.category].correct++;
+      }
     }
     return acc;
-  }, {} as Record<string, { correct: number; total: number }>);
+  }, {} as Record<string, { correct: number; total: number; answered: number }>);
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,12 +58,19 @@ export const ResultsScreen = ({
               )}
             </div>
             <CardTitle className="text-3xl font-bold mb-2">
-              {passed ? "Bestanden!" : "Nicht bestanden"}
+              {passed ? "Passed!" : "Not Passed"}
             </CardTitle>
             <p className="text-muted-foreground">
-              Du hast {correctCount} von {questions.length} Fragen richtig
-              beantwortet
+              You answered {correctCount} out of {totalQuestions} questions correctly
             </p>
+            {totalAnswered < totalQuestions && (
+              <div className="mt-2 flex items-center justify-center gap-2 text-orange-600 dark:text-orange-400">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm">
+                  {totalQuestions - totalAnswered} questions were not answered
+                </span>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -68,8 +81,8 @@ export const ResultsScreen = ({
                 <Progress value={percentage} className="h-3 mb-4" />
                 <p className="text-sm text-muted-foreground">
                   {passed
-                    ? "Du hast die erforderliche Punktzahl von 70% erreicht"
-                    : "Du benötigst mindestens 70% zum Bestehen"}
+                    ? "You achieved the required passing score of 70%"
+                    : "You need at least 70% to pass"}
                 </p>
               </div>
             </div>
@@ -80,40 +93,43 @@ export const ResultsScreen = ({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Leistung nach Kategorie
+              Performance by Category
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Object.entries(categoryStats).map(([category, stats]) => {
-                const categoryPercentage = Math.round(
-                  (stats.correct / stats.total) * 100
-                );
-                return (
-                  <div key={category} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{category}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {stats.correct}/{stats.total} ({categoryPercentage}%)
-                      </span>
+              {Object.entries(categoryStats)
+                .sort((a, b) => b[1].total - a[1].total)
+                .map(([category, stats]) => {
+                  const categoryPercentage = stats.answered > 0
+                    ? Math.round((stats.correct / stats.answered) * 100)
+                    : 0;
+                  return (
+                    <div key={category} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{category}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {stats.correct}/{stats.answered} answered ({categoryPercentage}%)
+                        </span>
+                      </div>
+                      <Progress value={categoryPercentage} className="h-2" />
                     </div>
-                    <Progress value={categoryPercentage} className="h-2" />
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </CardContent>
         </Card>
 
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Detaillierte Auswertung</CardTitle>
+            <CardTitle>Detailed Review</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               {questions.map((question, index) => {
                 const answer = answers.find((a) => a.questionId === question.id);
                 const isCorrect = answer?.isCorrect || false;
+                const wasAnswered = answer !== undefined;
 
                 return (
                   <div
@@ -121,7 +137,9 @@ export const ResultsScreen = ({
                     className="border-b border-border pb-6 last:border-0"
                   >
                     <div className="flex items-start gap-3 mb-3">
-                      {isCorrect ? (
+                      {!wasAnswered ? (
+                        <AlertTriangle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-1" />
+                      ) : isCorrect ? (
                         <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-1" />
                       ) : (
                         <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-1" />
@@ -132,8 +150,13 @@ export const ResultsScreen = ({
                             {question.category}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
-                            Frage {index + 1}
+                            Question {index + 1}
                           </span>
+                          {!wasAnswered && (
+                            <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">
+                              Not Answered
+                            </Badge>
+                          )}
                         </div>
                         <p className="font-medium mb-3">{question.question}</p>
 
@@ -168,7 +191,7 @@ export const ResultsScreen = ({
                                       variant="outline"
                                       className="ml-auto text-xs border-success text-success"
                                     >
-                                      Richtig
+                                      Correct Answer
                                     </Badge>
                                   )}
                                   {isSelected && !isCorrectOption && (
@@ -176,7 +199,7 @@ export const ResultsScreen = ({
                                       variant="outline"
                                       className="ml-auto text-xs border-destructive text-destructive"
                                     >
-                                      Deine Antwort
+                                      Your Answer
                                     </Badge>
                                   )}
                                 </div>
@@ -187,7 +210,7 @@ export const ResultsScreen = ({
 
                         <div className="bg-accent/30 p-3 rounded-lg">
                           <p className="text-sm">
-                            <strong>Erklärung:</strong> {question.explanation}
+                            <strong>Explanation:</strong> {question.explanation}
                           </p>
                         </div>
                       </div>
@@ -201,7 +224,7 @@ export const ResultsScreen = ({
 
         <div className="flex justify-center">
           <Button onClick={onRestart} size="lg" className="w-64">
-            Neue Prüfung starten
+            Start New Exam
           </Button>
         </div>
       </div>
