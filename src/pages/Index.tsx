@@ -31,12 +31,19 @@ const Index = () => {
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   
-  // Randomize questions only once when exam starts
-  const randomizedQuestions = useMemo(() => shuffleArray(questions), [started]);
+  // Randomize questions and select 100-120 questions for the exam (realistic CCNA exam)
+  const randomizedQuestions = useMemo(() => {
+    const shuffled = shuffleArray(questions);
+    const examQuestionCount = Math.floor(Math.random() * 21) + 100; // Random between 100-120
+    return shuffled.slice(0, examQuestionCount);
+  }, [started]);
 
   const handleStart = () => {
     setStarted(true);
-    toast.success("Exam started! You have 120 minutes to complete.");
+    // Toast will show the actual number of questions after randomization
+    setTimeout(() => {
+      toast.success(`Exam started! ${Math.floor(Math.random() * 21) + 100} questions - 120 minutes to complete.`);
+    }, 100);
   };
 
   const handleTimeUp = useCallback(() => {
