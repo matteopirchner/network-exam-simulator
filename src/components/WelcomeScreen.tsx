@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Clock, FileText, Award } from "lucide-react";
+import { CheckCircle2, Clock, FileText, Award, Mail } from "lucide-react";
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -80,6 +80,19 @@ export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
           >
             Start Exam
           </Button>
+
+          <div className="mt-6 pt-6 border-t border-border text-center">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Mail className="h-4 w-4" />
+              <span>Fehler gefunden oder Verbesserungsvorschläge?</span>
+            </div>
+            <a
+              href="mailto:matteo@pirchner.me"
+              className="text-sm text-primary hover:underline mt-1 inline-block"
+            >
+              matteo@pirchner.me
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>

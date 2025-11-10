@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, TrendingUp, Award, AlertTriangle, BookOpen } from "lucide-react";
+import { CheckCircle2, XCircle, TrendingUp, Award, AlertTriangle, BookOpen, Mail } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import type { Answer } from "@/pages/Index";
 import type { Question } from "@/data/questions";
@@ -222,11 +222,26 @@ export const ResultsScreen = ({
           </CardContent>
         </Card>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-8">
           <Button onClick={onRestart} size="lg" className="w-64">
             Start New Exam
           </Button>
         </div>
+
+        <Card className="mb-8">
+          <CardContent className="pt-6 text-center">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
+              <Mail className="h-4 w-4" />
+              <span>Fehler gefunden oder Verbesserungsvorschläge?</span>
+            </div>
+            <a
+              href="mailto:matteo@pirchner.me"
+              className="text-sm text-primary hover:underline"
+            >
+              matteo@pirchner.me
+            </a>
+          </CardContent>
+        </Card>
 
         {/* Feedback and Recommendations Section */}
         <Card className="p-6 mt-6">
