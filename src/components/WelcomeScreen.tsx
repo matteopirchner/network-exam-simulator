@@ -84,7 +84,7 @@ export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
           <div className="mt-6 pt-6 border-t border-border text-center">
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4" />
-              <span>Fehler gefunden oder Verbesserungsvorschläge?</span>
+              <span>Found errors or have suggestions?</span>
             </div>
             <a
               href="mailto:matteo@pirchner.me"

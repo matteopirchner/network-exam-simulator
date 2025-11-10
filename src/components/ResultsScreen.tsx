@@ -232,7 +232,7 @@ export const ResultsScreen = ({
           <CardContent className="pt-6 text-center">
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
               <Mail className="h-4 w-4" />
-              <span>Fehler gefunden oder Verbesserungsvorschläge?</span>
+              <span>Found errors or have suggestions?</span>
             </div>
             <a
               href="mailto:matteo@pirchner.me"
